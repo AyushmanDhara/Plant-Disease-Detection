@@ -50,57 +50,6 @@
 
 ---
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.8 or higher
-- CUDA-capable GPU (optional, for faster inference)
-
-### Installation
-
-1. **Clone the repository:**
-```bash
-git clone https://github.com/yourusername/PlantGuard.git
-cd PlantGuard
-```
-
-2. **Create a virtual environment:**
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Linux/Mac
-python -m venv venv
-source venv/bin/activate
-```
-
-3. **Install dependencies:**
-```bash
-pip install torch torchvision
-pip install gradio
-pip install pillow
-pip install numpy
-```
-
-### Running the Application
-
-1. **Navigate to the Gradio project folder:**
-```bash
-cd "final Gradio project hugging face project files"
-```
-
-2. **Run the app:**
-```bash
-python app.py
-```
-
-3. **Open in browser:**
-The app will launch at `http://localhost:55500`
-
----
-
 ## 📁 Project Structure
 
 ```
@@ -199,4 +148,5 @@ This project is licensed under the MIT License.
 <p align="center">
   Made with ❤️ for plant health
 </p>
+
 
