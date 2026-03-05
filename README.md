@@ -1,5 +1,5 @@
 # 🌿 PlantGuard - AI Plant Disease Detection System
-# Website Link : https://huggingface.co/spaces/adalis/Plant_Diseases_Identifier (This model hosting at hugging face)
+
 <p align="center">
   <img src="https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch" alt="PyTorch">
   <img src="https://img.shields.io/badge/Gradio-4.0+-FFB000?style=for-the-badge&logo=gradio" alt="Gradio">
@@ -7,6 +7,8 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
 </p>
 
+# Website Link : https://huggingface.co/spaces/adalis/Plant_Diseases_Identifier 
+##(This model hosting at hugging face)
 <p align="center">
   <img src="https://img.shields.io/badge/Model-MobileNetV3--Large-orange?style=for-the-badge" alt="Model">
   <img src="https://img.shields.io/badge/Diseases-38+-red?style=for-the-badge" alt="Diseases">
@@ -148,6 +150,7 @@ This project is licensed under the MIT License.
 <p align="center">
   Made with ❤️ for plant health
 </p>
+
 
 
 
