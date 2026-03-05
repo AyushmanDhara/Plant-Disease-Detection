@@ -15,7 +15,7 @@
 </p>
 
 # Website Link : https://huggingface.co/spaces/adalis/Plant_Diseases_Identifier 
-> **(This model hosting at hugging face)
+> (This model hosting at hugging face)
 
 > **Protect your plants with cutting-edge AI technology.** Upload a photo of any plant leaf and get instant disease diagnosis with detailed treatment recommendations.
 
@@ -152,6 +152,7 @@ This project is licensed under the MIT License.
 <p align="center">
   Made with ❤️ for plant health
 </p>
+
 
 
 
