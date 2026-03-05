@@ -19,7 +19,7 @@
 
 ---
 ## ✨ Website Link : https://huggingface.co/spaces/adalis/Plant_Diseases_Identifier 
-> (This model hosting at hugging face)
+> (This Project hosting At Hugging Face)
 
 ---
 ## ✨ Features
@@ -153,6 +153,7 @@ This project is licensed under the MIT License.
 <p align="center">
   Made with ❤️ for plant health
 </p>
+
 
 
 
