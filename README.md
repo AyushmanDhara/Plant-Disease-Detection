@@ -7,13 +7,15 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
 </p>
 
-# Website Link : https://huggingface.co/spaces/adalis/Plant_Diseases_Identifier 
-##(This model hosting at hugging face)
+
 <p align="center">
   <img src="https://img.shields.io/badge/Model-MobileNetV3--Large-orange?style=for-the-badge" alt="Model">
   <img src="https://img.shields.io/badge/Diseases-38+-red?style=for-the-badge" alt="Diseases">
   <img src="https://img.shields.io/badge/Plants-14+-green?style=for-the-badge" alt="Plants">
 </p>
+
+# Website Link : https://huggingface.co/spaces/adalis/Plant_Diseases_Identifier 
+> **(This model hosting at hugging face)
 
 > **Protect your plants with cutting-edge AI technology.** Upload a photo of any plant leaf and get instant disease diagnosis with detailed treatment recommendations.
 
@@ -150,6 +152,7 @@ This project is licensed under the MIT License.
 <p align="center">
   Made with ❤️ for plant health
 </p>
+
 
 
 
