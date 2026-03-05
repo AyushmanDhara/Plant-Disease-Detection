@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlantGuard - AI Plant Disease Detection</title>
+    
+    <!-- Tailwind CSS (local build) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        'primary-dark': '#059669',
+                        'primary-light': '#34d399',
+                        secondary: '#6366f1',
+                        'secondary-dark': '#4f46e5',
+                        accent: '#f59e0b',
+                        dark: {
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                            600: '#475569',
+                            500: '#64748b',
+                            400: '#94a3b8',
+                            300: '#cbd5e1',
+                            200: '#e2e8f0',
+                            100: '#f1f5f9',
+                        }
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                        'bounce-gentle': 'bounce 2s infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        
+        html {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            max-width: 100%;
+            width: 100%;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #10b981, #059669);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+        
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Animated Gradient Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed #10b981;
+            background: rgba(16, 185, 129, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #34d399;
+            background: rgba(16, 185, 129, 0.1);
+            transform: scale(1.02);
+        }
+        
+        /* Pulse Ring */
+        .pulse-ring {
+            animation: pulse-ring 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        /* Severity Badge */
+        .severity-none { background: linear-gradient(135deg, #10b981, #059669); }
+        .severity-low { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .severity-medium { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .severity-high { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .severity-critical { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
+        /* Custom Button */
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+        
+        /* Loading Animation */
+        .loading-leaf {
+            animation: float 2s ease-in-out infinite;
+        }
+        
+        /* Result Card Animation */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-animate {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+        
+        /* Nav Link Hover */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #10b981, #6366f1);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Disease Card Hover */
+        .disease-card {
+            transition: all 0.3s ease;
+        }
+        
+        .disease-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Tab Active */
+        .tab-active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        /* Image Preview */
+        .image-preview {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .image-preview img {
+            transition: transform 0.3s ease;
+        }
+        
+        .image-preview:hover img {
+            transform: scale(1.05);
+        }
+        
+        /* Hide sections by default */
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+
+        /* ===== MOBILE FIXES ===== */
+        /* Active nav link indicator */
+        .nav-link.nav-active {
+            color: #10b981 !important;
+        }
+        .nav-link.nav-active::after {
+            width: 100% !important;
+        }
+        .mobile-nav-link.nav-active {
+            color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        @media (max-width: 767px) {
+            /* Root overflow fix */
+            html, body {
+                overflow-x: hidden !important;
+                width: 100% !important;
+            }
+
+            /* All sections constrained */
+            .section {
+                width: 100% !important;
+                overflow-x: hidden !important;
+            }
+
+            main {
+                overflow-x: hidden !important;
+                width: 100% !important;
+            }
+
+            /* Fix all max-w containers */
+            .max-w-6xl, .max-w-7xl, .max-w-4xl, .max-w-3xl, .max-w-2xl {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            /* ── FIX 1: Our Mission & Technology cards gap ── */
+            .about-left-col {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 1.25rem !important;
+            }
+            /* Remove mb-8 since gap handles spacing */
+            .about-left-col .glass-card.rounded-3xl:first-child {
+                margin-bottom: 0 !important;
+            }
+
+            /* ── FIX 2: Detect section & result box overflow ── */
+            /* Constrain detect section and its children */
+            #detect {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                overflow-x: hidden !important;
+            }
+            .detect-grid {
+                width: 100% !important;
+                overflow-x: hidden !important;
+            }
+            .detect-grid > div {
+                width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: hidden !important;
+            }
+            /* Result box inner elements */
+            #resultsContainer,
+            #predictionCard,
+            #loadingState,
+            #initialState {
+                width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: hidden !important;
+            }
+            /* Confidence badge text wrap */
+            #confidenceBadge {
+                font-size: 0.7rem !important;
+                padding: 0.25rem 0.5rem !important;
+                white-space: nowrap;
+            }
+            /* Diagnosis card header */
+            .bg-gradient-to-r.from-primary\/20 {
+                overflow-x: hidden !important;
+            }
+
+            /* ── FIX 3: Hero badge push down on mobile ── */
+            .hero-badge {
+                margin-top: 1.5rem !important;
+                margin-bottom: 1.25rem !important;
+            }
+            /* Hero title scaling */
+            .hero-title {
+                font-size: 2.5rem !important;
+                line-height: 1.2 !important;
+            }
+
+            /* Hero subtitle */
+            .hero-subtitle {
+                font-size: 1rem !important;
+            }
+
+            /* Stat cards - 2 col grid stays, reduce padding */
+            .stat-card {
+                padding: 1rem !important;
+            }
+            .stat-card .stat-number {
+                font-size: 2rem !important;
+            }
+
+            /* Feature cards single column */
+            .features-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Section headings */
+            .section-title {
+                font-size: 1.75rem !important;
+            }
+
+            /* Detect section - single column */
+            .detect-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Upload zone padding */
+            #uploadZone {
+                padding: 2rem 1rem !important;
+            }
+
+            /* Tab buttons - scrollable horizontal */
+            .tabs-row {
+                overflow-x: auto !important;
+                flex-wrap: nowrap !important;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .tabs-row::-webkit-scrollbar { display: none; }
+            .tab-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                font-size: 0.8rem !important;
+                padding: 0.5rem 0.75rem !important;
+            }
+
+            /* Prediction card flex wrap */
+            #predictionCard .flex.items-center.justify-between {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            /* Disease grid single column */
+            #diseaseGrid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Plant filter - wrap on mobile */
+            .filter-search-container {
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            #plantFilters {
+                flex-wrap: wrap !important;
+                overflow-x: visible !important;
+                justify-content: flex-start !important;
+                gap: 0.5rem !important;
+            }
+            .filter-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                font-size: 0.75rem !important;
+                padding: 0.375rem 0.75rem !important;
+            }
+
+            /* About section single column */
+            .about-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Glass card padding - reduce from p-8 */
+            .glass-card.rounded-3xl {
+                padding: 1.25rem !important;
+            }
+
+            /* Upload zone padding - reduce from p-12 */
+            #uploadZone {
+                padding: 1.5rem 1rem !important;
+            }
+
+            /* Detect/About section outer padding */
+            #detect, #about, #diseases, #home {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            footer {
+                margin-top: 3rem !important;
+            }
+
+            /* Severity flex wrap */
+            .severity-row {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.5rem;
+            }
+
+            /* CTA buttons full width on mobile */
+            .cta-row {
+                width: 100%;
+            }
+            .cta-row button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Result card disease name */
+            #diseaseName {
+                font-size: 1.25rem !important;
+            }
+        }
+    </style>
+</head>
+<body class="animated-bg">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-card" style="width:100%;max-width:100%;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="showSection('home')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                        <i class="fas fa-leaf text-white text-lg"></i>
+                    </div>
+                    <span class="font-poppins font-bold text-xl gradient-text">PlantGuard</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" onclick="showSection('home')" data-section="home" class="nav-link text-dark-300 hover:text-primary transition-colors font-medium">Home</a>
+                    <a href="#" onclick="showSection('detect')" data-section="detect" class="nav-link text-dark-300 hover:text-primary transition-colors font-medium">Detect</a>
+                    <a href="#" onclick="showSection('diseases')" data-section="diseases" class="nav-link text-dark-300 hover:text-primary transition-colors font-medium">Diseases</a>
+                    <a href="#" onclick="showSection('about')" data-section="about" class="nav-link text-dark-300 hover:text-primary transition-colors font-medium">About</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden text-dark-300 hover:text-primary" aria-label="Toggle mobile menu">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="mobileMenu" class="hidden md:hidden glass-card border-t border-dark-600">
+            <div class="px-4 py-3 space-y-1">
+                <a href="#" onclick="showSection('home')" data-section="home" class="mobile-nav-link block px-3 py-2 text-dark-300 hover:text-primary transition-colors">Home</a>
+                <a href="#" onclick="showSection('detect')" data-section="detect" class="mobile-nav-link block px-3 py-2 text-dark-300 hover:text-primary transition-colors">Detect</a>
+                <a href="#" onclick="showSection('diseases')" data-section="diseases" class="mobile-nav-link block px-3 py-2 text-dark-300 hover:text-primary transition-colors">Diseases</a>
+                <a href="#" onclick="showSection('about')" data-section="about" class="mobile-nav-link block px-3 py-2 text-dark-300 hover:text-primary transition-colors">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+        <!-- HOME SECTION -->
+        <section id="home" class="section active">
+            <!-- Hero Section -->
+            <div class="relative min-h-[90vh] flex items-center justify-center overflow-hidden" style="overflow:hidden;">
+                <!-- Background Elements -->
+                <div class="absolute inset-0 overflow-hidden" style="overflow:hidden;">
+                    <div class="absolute top-20 left-10 w-48 h-48 md:w-72 md:h-72 bg-primary/10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-20 right-10 w-48 h-48 md:w-96 md:h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-[600px] md:h-[600px] bg-accent/5 rounded-full blur-3xl"></div>
+                </div>
+                
+                <div class="relative z-10 max-w-6xl mx-auto px-4 text-center">
+                    <!-- Badge -->
+                    <div class="hero-badge inline-flex items-center px-4 py-2 rounded-full glass-card mb-8">
+                        <span class="w-2 h-2 rounded-full bg-primary animate-pulse mr-2"></span>
+                        <span class="text-sm text-dark-300">AI-Powered Plant Disease Detection</span>
+                    </div>
+                    
+                    <!-- Main Title -->
+                    <h1 class="hero-title font-poppins text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                        <span class="gradient-text">Protect Your Plants</span>
+                        <br>
+                        <span class="text-white">with AI Intelligence</span>
+                    </h1>
+                    
+                    <!-- Subtitle -->
+                    <p class="hero-subtitle text-xl md:text-2xl text-dark-400 mb-10 max-w-3xl mx-auto">
+                        Upload a photo of your plant leaf and get instant disease diagnosis with detailed treatment recommendations.
+                    </p>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="cta-row flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                        <button onclick="showSection('detect')" class="btn-primary px-8 py-4 rounded-xl text-white font-semibold text-lg flex items-center space-x-2">
+                            <i class="fas fa-camera"></i>
+                            <span>Start Detection</span>
+                        </button>
+                        <button onclick="showSection('diseases')" class="px-8 py-4 rounded-xl border-2 border-dark-600 text-dark-300 hover:border-primary hover:text-primary font-semibold text-lg transition-all">
+                            <i class="fas fa-book-medical mr-2"></i>
+                            Learn Diseases
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                        <div class="stat-card glass-card rounded-2xl p-6">
+                            <div class="stat-number text-4xl font-bold gradient-text mb-2">38+</div>
+                            <div class="text-dark-400 text-sm">Disease Classes</div>
+                        </div>
+                        <div class="stat-card glass-card rounded-2xl p-6">
+                            <div class="stat-number text-4xl font-bold gradient-text mb-2">14+</div>
+                            <div class="text-dark-400 text-sm">Plant Types</div>
+                        </div>
+                        <div class="stat-card glass-card rounded-2xl p-6">
+                            <div class="stat-number text-4xl font-bold gradient-text mb-2">90%+</div>
+                            <div class="text-dark-400 text-sm">Accuracy</div>
+                        </div>
+                        <div class="stat-card glass-card rounded-2xl p-6">
+                            <div class="stat-number text-4xl font-bold gradient-text mb-2">24/7</div>
+                            <div class="text-dark-400 text-sm">Available</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scroll Indicator -->
+                <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                    <div class="w-6 h-10 rounded-full border-2 border-dark-500 flex justify-center pt-2">
+                        <div class="w-1 h-3 bg-primary rounded-full animate-bounce"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features Section -->
+            <div class="py-20 px-4">
+                <div class="max-w-6xl mx-auto">
+                    <div class="text-center mb-16">
+                        <h2 class="section-title font-poppins text-4xl font-bold text-white mb-4">How It Works</h2>
+                        <p class="text-dark-400 text-lg">Three simple steps to protect your plants</p>
+                    </div>
+                    
+                    <div class="features-grid grid md:grid-cols-3 gap-8">
+                        <!-- Step 1 -->
+                        <div class="glass-card rounded-3xl p-8 text-center">
+                            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                                <i class="fas fa-camera text-4xl text-primary"></i>
+                            </div>
+                            <h3 class="font-poppins text-xl font-semibold text-white mb-3">Upload Photo</h3>
+                            <p class="text-dark-400">Take a clear photo of the affected plant leaf and upload it to our system.</p>
+                        </div>
+                        
+                        <!-- Step 2 -->
+                        <div class="glass-card rounded-3xl p-8 text-center">
+                            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center">
+                                <i class="fas fa-brain text-4xl text-secondary"></i>
+                            </div>
+                            <h3 class="font-poppins text-xl font-semibold text-white mb-3">AI Analysis</h3>
+                            <p class="text-dark-400">Our deep learning model analyzes the image and identifies the disease.</p>
+                        </div>
+                        
+                        <!-- Step 3 -->
+                        <div class="glass-card rounded-3xl p-8 text-center">
+                            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+                                <i class="fas fa-stethoscope text-4xl text-accent"></i>
+                            </div>
+                            <h3 class="font-poppins text-xl font-semibold text-white mb-3">Get Treatment</h3>
+                            <p class="text-dark-400">Receive detailed diagnosis with symptoms, causes, and treatment solutions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DETECT SECTION -->
+        <section id="detect" class="section py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="section-title font-poppins text-4xl font-bold text-white mb-4">Plant Disease Detection</h2>
+                    <p class="text-dark-400 text-lg">Upload a leaf image for AI-powered disease diagnosis</p>
+                </div>
+                
+                <div class="detect-grid grid lg:grid-cols-2 gap-8">
+                    <!-- Upload Section -->
+                    <div class="glass-card rounded-3xl p-8">
+                        <h3 class="font-poppins text-xl font-semibold text-white mb-6">
+                            <i class="fas fa-cloud-upload-alt text-primary mr-2"></i>
+                            Upload Image
+                        </h3>
+                        
+                        <!-- Upload Zone -->
+                        <div id="uploadZone" class="upload-zone rounded-2xl p-12 text-center cursor-pointer">
+                            <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
+                            
+                            <div id="uploadPlaceholder">
+                                <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-primary"></i>
+                                </div>
+                                <p class="text-white font-medium mb-2">Drag & drop your plant image here</p>
+                                <p class="text-dark-400 text-sm">or click to browse</p>
+                                <p class="text-dark-500 text-xs mt-4">Supports: PNG, JPG, JPEG, WebP</p>
+                            </div>
+                            
+                            <!-- Preview -->
+                            <div id="previewContainer" class="hidden">
+                                <div class="image-preview rounded-xl overflow-hidden mb-4">
+                                    <img id="previewImage" src="" alt="Preview" class="w-full h-64 object-cover">
+                                </div>
+                                <button onclick="removeImage()" class="text-red-400 hover:text-red-300">
+                                    <i class="fas fa-trash mr-1"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Analyze Button -->
+                        <button id="analyzeBtn" onclick="analyzeImage()" class="btn-primary w-full mt-6 py-4 rounded-xl text-white font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fas fa-search"></i>
+                            <span>Analyze Image</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    <div class="glass-card rounded-3xl p-8">
+                        <h3 class="font-poppins text-xl font-semibold text-white mb-6">
+                            <i class="fas fa-microscope text-secondary mr-2"></i>
+                            Diagnosis Results
+                        </h3>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="hidden text-center py-12">
+                            <div class="relative w-24 h-24 mx-auto mb-6">
+                                <div class="absolute inset-0 rounded-full border-4 border-primary/30"></div>
+                                <div class="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                                <div class="absolute inset-4 rounded-full bg-dark-800 flex items-center justify-center">
+                                    <i class="fas fa-leaf text-2xl text-primary loading-leaf"></i>
+                                </div>
+                            </div>
+                            <p class="text-white font-medium mb-2">Analyzing your plant...</p>
+                            <p class="text-dark-400 text-sm">Our AI is examining the image</p>
+                        </div>
+                        
+                        <!-- Initial State -->
+                        <div id="initialState" class="text-center py-12">
+                            <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-dark-700 flex items-center justify-center">
+                                <i class="fas fa-leaf text-4xl text-dark-500"></i>
+                            </div>
+                            <p class="text-dark-400">Upload an image to see results</p>
+                        </div>
+                        
+                        <!-- Results -->
+                        <div id="resultsContainer" class="hidden">
+                            <!-- Prediction Card -->
+                            <div id="predictionCard" class="result-animate">
+                                <div class="bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl p-6 mb-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <span class="text-dark-400 text-sm">Primary Diagnosis</span>
+                                        <span id="confidenceBadge" class="px-3 py-1 rounded-full text-sm font-medium text-white severity-none">
+                                            95% Confidence
+                                        </span>
+                                    </div>
+                                    <h4 id="diseaseName" class="font-poppins text-2xl font-bold text-white mb-2">-</h4>
+                                    <p id="plantType" class="text-primary">-</p>
+                                </div>
+                                
+                                <!-- Severity -->
+                                <div class="severity-row flex items-center justify-between mb-6">
+                                    <span class="text-dark-400">Severity Level</span>
+                                    <span id="severityBadge" class="px-4 py-2 rounded-lg text-white font-medium severity-medium">
+                                        Medium
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Disease Details Tabs -->
+                            <div class="mb-6">
+                                <div class="tabs-row flex border-b border-dark-600 mb-4">
+                                    <button onclick="switchTab('symptoms')" id="tab-symptoms" class="tab-btn px-4 py-2 text-dark-400 hover:text-white border-b-2 border-transparent">
+                                        Symptoms
+                                    </button>
+                                    <button onclick="switchTab('causes')" id="tab-causes" class="tab-btn px-4 py-2 text-dark-400 hover:text-white border-b-2 border-transparent">
+                                        Causes
+                                    </button>
+                                    <button onclick="switchTab('treatment')" id="tab-treatment" class="tab-btn px-4 py-2 text-dark-400 hover:text-white border-b-2 border-transparent">
+                                        Treatment
+                                    </button>
+                                    <button onclick="switchTab('prevention')" id="tab-prevention" class="tab-btn px-4 py-2 text-dark-400 hover:text-white border-b-2 border-transparent">
+                                        Prevention
+                                    </button>
+                                </div>
+                                
+                                <!-- Tab Content -->
+                                <div id="content-symptoms" class="tab-content">
+                                    <div class="bg-dark-800 rounded-xl p-4">
+                                        <p id="symptomsText" class="text-dark-300 leading-relaxed">-</p>
+                                    </div>
+                                </div>
+                                <div id="content-causes" class="tab-content hidden">
+                                    <div class="bg-dark-800 rounded-xl p-4">
+                                        <p id="causesText" class="text-dark-300 leading-relaxed">-</p>
+                                    </div>
+                                </div>
+                                <div id="content-treatment" class="tab-content hidden">
+                                    <div class="space-y-4">
+                                        <div class="bg-dark-800 rounded-xl p-4">
+                                            <h5 class="text-primary font-medium mb-2">
+                                                <i class="fas fa-leaf mr-2"></i>Organic Treatment
+                                            </h5>
+                                            <p id="treatmentOrganic" class="text-dark-300 text-sm leading-relaxed">-</p>
+                                        </div>
+                                        <div class="bg-dark-800 rounded-xl p-4">
+                                            <h5 class="text-secondary font-medium mb-2">
+                                                <i class="fas fa-flask mr-2"></i>Chemical Treatment
+                                            </h5>
+                                            <p id="treatmentChemical" class="text-dark-300 text-sm leading-relaxed">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="content-prevention" class="tab-content hidden">
+                                    <div class="bg-dark-800 rounded-xl p-4">
+                                        <p id="preventionText" class="text-dark-300 leading-relaxed">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Another Analysis -->
+                            <button onclick="resetDetection()" class="w-full py-3 rounded-xl border-2 border-dark-600 text-dark-400 hover:border-primary hover:text-primary transition-all">
+                                <i class="fas fa-redo mr-2"></i> Analyze Another Image
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DISEASES SECTION -->
+        <section id="diseases" class="section py-20 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="section-title font-poppins text-4xl font-bold text-white mb-4">Disease Database</h2>
+                    <p class="text-dark-400 text-lg mb-8">Learn about common plant diseases and their treatments</p>
+                    
+                    <!-- Search & Filter -->
+                    <div class="filter-search-container max-w-2xl mx-auto px-0">
+                        <div class="relative">
+                            <input type="text" id="searchInput" onkeyup="searchDiseases()" placeholder="Search diseases or plants..." 
+                                class="w-full px-6 py-4 pl-14 rounded-2xl bg-dark-800 border border-dark-600 text-white placeholder-dark-500 focus:border-primary focus:outline-none">
+                            <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-dark-500"></i>
+                        </div>
+                        
+                        <!-- Plant Filter -->
+                        <div class="flex flex-wrap justify-center gap-2 mt-4" id="plantFilters">
+                            <button onclick="filterByPlant('all')" class="filter-btn px-4 py-2 rounded-lg bg-primary text-white text-sm">All</button>
+                            <button onclick="filterByPlant('Apple')" class="filter-btn px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 text-sm">Apple</button>
+                            <button onclick="filterByPlant('Tomato')" class="filter-btn px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 text-sm">Tomato</button>
+                            <button onclick="filterByPlant('Potato')" class="filter-btn px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 text-sm">Potato</button>
+                            <button onclick="filterByPlant('Grape')" class="filter-btn px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 text-sm">Grape</button>
+                            <button onclick="filterByPlant('Corn')" class="filter-btn px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 text-sm">Corn</button>
+                            <button onclick="filterByPlant('Cherry')" class="filter-btn px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 text-sm">Cherry</button>
+                            <button onclick="filterByPlant('Strawberry')" class="filter-btn px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 text-sm">Strawberry</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Disease Grid -->
+                <div id="diseaseGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Disease cards will be loaded dynamically -->
+                </div>
+                
+                <!-- No Results -->
+                <div id="noResults" class="hidden text-center py-12">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-dark-700 flex items-center justify-center">
+                        <i class="fas fa-search text-4xl text-dark-500"></i>
+                    </div>
+                    <p class="text-dark-400">No diseases found matching your search</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section id="about" class="section py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="section-title font-poppins text-4xl font-bold text-white mb-4">About PlantGuard</h2>
+                    <p class="text-dark-400 text-lg">Advanced AI-Powered Plant Disease Detection System</p>
+                </div>
+                
+                <div class="about-grid grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="about-left-col">
+                        <div class="glass-card rounded-3xl p-8 mb-8">
+                            <h3 class="font-poppins text-2xl font-bold text-white mb-4">Our Mission</h3>
+                            <p class="text-dark-300 leading-relaxed mb-6">
+                                PlantGuard aims to revolutionize agricultural disease detection using cutting-edge artificial intelligence. 
+                                Our deep learning model can identify over 38 different plant diseases with high accuracy, helping farmers 
+                                and gardeners protect their crops and plants effectively.
+                            </p>
+                            <p class="text-dark-300 leading-relaxed">
+                                By providing instant diagnosis and comprehensive treatment recommendations, we empower users to take 
+                                immediate action and prevent the spread of plant diseases.
+                            </p>
+                        </div>
+                        
+                        <div class="glass-card rounded-3xl p-8">
+                            <h3 class="font-poppins text-2xl font-bold text-white mb-4">Technology</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center mr-4 mt-1">
+                                        <i class="fas fa-brain text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-white font-medium mb-1">Deep Learning</h4>
+                                        <p class="text-dark-400 text-sm">Advanced CNN architecture trained on thousands of plant images</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center mr-4 mt-1">
+                                        <i class="fas fa-database text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-white font-medium mb-1">Comprehensive Database</h4>
+                                        <p class="text-dark-400 text-sm">Detailed information for 38+ disease classes with treatment protocols</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center mr-4 mt-1">
+                                        <i class="fas fa-mobile-alt text-accent"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-white font-medium mb-1">Easy to Use</h4>
+                                        <p class="text-dark-400 text-sm">Simple interface accessible from any device</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="glass-card rounded-3xl p-8">
+                            <h4 class="font-poppins text-xl font-semibold text-white mb-4">Supported Plants</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Apple</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Blueberry</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Cherry</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Corn</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Grape</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Orange</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Peach</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Pepper</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Potato</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Raspberry</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Soybean</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Squash</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Strawberry</span>
+                                <span class="px-3 py-1 rounded-full bg-dark-700 text-dark-300 text-sm">Tomato</span>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card rounded-3xl p-8">
+                            <h4 class="font-poppins text-xl font-semibold text-white mb-4">Contact & Support</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center text-dark-300">
+                                    <i class="fas fa-envelope text-primary w-6"></i>
+                                    <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="176462676778656357677b76796370627665733974787a">[email&#160;protected]</a></span>
+                                </div>
+                                <div class="flex items-center text-dark-300">
+                                    <i class="fas fa-globe text-primary w-6"></i>
+                                    <span>www.plantguard.com</span>
+                                </div>
+                                <div class="flex items-center text-dark-300">
+                                    <i class="fas fa-clock text-primary w-6"></i>
+                                    <span>Available 24/7</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card rounded-3xl p-8 gradient-bg">
+                            <h4 class="font-poppins text-xl font-semibold text-white mb-4">Quick Tips</h4>
+                            <ul class="space-y-2 text-dark-300">
+                                <li><i class="fas fa-check text-primary mr-2"></i>Take clear, well-lit photos</li>
+                                <li><i class="fas fa-check text-primary mr-2"></i>Focus on affected areas</li>
+                                <li><i class="fas fa-check text-primary mr-2"></i>Include multiple angles</li>
+                                <li><i class="fas fa-check text-primary mr-2"></i>Check both sides of leaves</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="glass-card mt-20 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <i class="fas fa-leaf text-white text-sm"></i>
+                </div>
+                <span class="font-poppins font-bold text-white">PlantGuard</span>
+            </div>
+            <p class="text-dark-500 text-sm">© 2026 PlantGuard - AI Plant Disease Detection System</p>
+        </div>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
