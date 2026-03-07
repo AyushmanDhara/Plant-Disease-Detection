@@ -923,8 +923,9 @@ ABOUT_HTML = (
   acard(
     atitle(ico("mail",15,"#00ffa3"),"Contact") +
     '<div style="display:flex;flex-direction:column;gap:9px;">' +
-    contact_row(ico("mail",13,"#64748b"),   "support@plantguard.com") +
-    contact_row(ico("globe",13,"#64748b"),  "www.plantguard.com") +
+    contact_row(ico("mail",13,"#64748b"),   "ayushmandharaofficial@gamil.com") +
+    contact_row(ico("globe",13,"#64748b"),  "https://github.com/AyushmanDhara") +
+    contact_row(ico("instagram",13,"#64748b"),  "https://www.instagram.com/ayushmandhara/") +
     contact_row(ico("clock",13,"#64748b"),  "Available 24 / 7") +
     '</div>'
   ) +
@@ -967,6 +968,7 @@ FOOTER = f"""
     <span style="color:#94a3b8;font-weight:700;font-size:.82rem;letter-spacing:.03em;">PlantGuard</span>
   </div>
   <p style="color:#475569;font-size:.7rem;margin:0;">© 2026 PlantGuard — AI Plant Disease Detection System</p>
+  <p style="color:#475569;font-size:.7rem;margin:0;">Developed by Ayushman Dhara</p>
 </div>"""
 
 # ─── Gradio App ──────────────────────────────────────────────
@@ -1076,4 +1078,5 @@ if __name__ == "__main__":
         raise OSError(f"No free port in {start}-{end}")
     port = find_free_port()
     print(f"\n  PlantGuard -> http://localhost:{port}\n")
+
     demo.launch(server_name="127.0.0.1", server_port=55500, share=False)
